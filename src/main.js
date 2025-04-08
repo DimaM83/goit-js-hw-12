@@ -10,11 +10,11 @@ import iziToast from 'izitoast';
 
 import 'izitoast/dist/css/iziToast.min.css';
 
-const form = document.querySelector('.form-search');
+const form = document.querySelector('.form');
 const loader = document.querySelector('.loader');
 loader.style.borderColor = 'white';
 loader.style.borderBottomColor = 'transparent';
-const photoGallery = document.querySelector('.images-place');
+const photoGallery = document.querySelector('.gallery');
 
 const buttonMore = document.querySelector('.buttonMore');
 
