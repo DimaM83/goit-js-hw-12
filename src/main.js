@@ -10,10 +10,21 @@ import iziToast from 'izitoast';
 
 import 'izitoast/dist/css/iziToast.min.css';
 
+function showToast({ title = 'Oops!', message = '', color = 'red' }) {
+  iziToast.show({
+    title,
+    titleColor: 'white',
+    message,
+    messageColor: 'white',
+    color,
+    position: 'topCenter',
+    timeout: 5000,
+  });
+}
+
 const form = document.querySelector('.form');
-const loader = document.querySelector('.loader');
-loader.style.borderColor = 'white';
-loader.style.borderBottomColor = 'transparent';
+const loader = document.querySelector('.loader-text');
+
 const photoGallery = document.querySelector('.gallery');
 
 const buttonMore = document.querySelector('.buttonMore');
@@ -27,28 +38,19 @@ form.addEventListener('submit', handleSearch);
 buttonMore.addEventListener('click', searchMore);
 
 let page = 1;
-let pageLimit;
 let searchWord;
 
 async function handleSearch(event) {
   event.preventDefault();
   buttonMore.hidden = true;
   photoGallery.innerHTML = '';
-  loader.style.borderColor = 'black';
-  loader.style.borderBottomColor = 'transparent';
+  loader.hidden = false;
 
   searchWord = event.currentTarget.elements.inputSearch.value.trim();
 
   if (searchWord === '') {
-    iziToast.show({
-      title: 'Oops!',
-      titleColor: 'white',
-      message: 'Please enter a valid search query!',
-      messageColor: 'white',
-      color: 'red',
-      position: 'topCenter',
-      timeout: 5000,
-    });
+    showToast({ message: 'No images found. Try another query.' });
+    loader.hidden = true;
     return;
   }
 
@@ -75,54 +77,35 @@ async function handleSearch(event) {
     book.refresh();
     event.target.reset();
     page += 1;
-    pageLimit = Math.floor(data.data.totalHits / 15);
 
-    if (page === pageLimit) {
-      iziToast.show({
-        titleColor: 'white',
-        message: `You've reached the end of search results.`,
-        messageColor: 'white',
-        color: 'blue',
-        position: 'topCenter',
-        timeout: 5000,
-      });
+    if (photoGallery.children.length >= data.data.totalHits) {
       buttonMore.hidden = true;
+      showToast({
+        title: 'Info',
+        message: "You've reached the end of search results.",
+        color: 'blue',
+      });
     }
   } catch (error) {
     buttonMore.hidden = true;
-    iziToast.show({
-      title: 'Error!',
-      titleColor: 'white',
-      message: error.message,
-      messageColor: 'white',
-      color: 'red',
-      position: 'topCenter',
-      timeout: 5000,
-    });
+
+    showToast({ title: 'Error!', message: error.message });
   } finally {
-    loader.style.borderColor = 'white';
-    loader.style.borderBottomColor = 'transparent';
+    loader.hidden = true;
   }
 }
 
 async function searchMore() {
   buttonMore.hidden = true;
-  loader.style.borderColor = 'black';
-  loader.style.borderBottomColor = 'transparent';
+
+  loader.hidden = false;
 
   try {
     const data = await doFetch(searchWord, page);
 
     if (data.total === 0) {
-      iziToast.show({
-        title: 'Oops!',
-        titleColor: 'white',
-        message: 'No more images found.',
-        messageColor: 'white',
-        color: 'red',
-        position: 'topCenter',
-        timeout: 5000,
-      });
+      showToast({ message: 'No more images found.' });
+
       return;
     }
 
@@ -137,32 +120,21 @@ async function searchMore() {
       behavior: 'smooth',
     });
 
-    if (page > pageLimit) {
-      iziToast.show({
-        titleColor: 'white',
-        message: `You've reached the end of search results.`,
-        messageColor: 'white',
-        color: 'blue',
-        position: 'topCenter',
-        timeout: 5000,
-      });
+    if (photoGallery.children.length >= data.data.totalHits) {
       buttonMore.hidden = true;
+      showToast({
+        title: 'Info',
+        message: "You've reached the end of search results.",
+        color: 'blue',
+      });
     } else {
       buttonMore.hidden = false;
     }
   } catch (error) {
     buttonMore.hidden = true;
-    iziToast.show({
-      title: 'Error!',
-      titleColor: 'white',
-      message: error.message,
-      messageColor: 'white',
-      color: 'red',
-      position: 'topCenter',
-      timeout: 5000,
-    });
+
+    showToast({ title: 'Error!', message: error.message });
   } finally {
-    loader.style.borderColor = 'white';
-    loader.style.borderBottomColor = 'transparent';
+    loader.hidden = true;
   }
 }
